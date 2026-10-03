@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -10,32 +9,32 @@ namespace MiniSupermarket.WinForms
 {
     public class FormCategoryManagement : Form
     {
-        // Use ApiClientService which attaches JWT token automatically
-
         // DataGridView
-        private DataGridView dgvCategories;
+        private DataGridView dgvCategories = null!;
 
-        // TextBox
-        private TextBox txtId;
-        private TextBox txtCategoryName;
-        private TextBox txtDescription;
-        private TextBox txtKeyword;
+        // Controls nhập liệu
+        private TextBox txtId = null!;
+        private TextBox txtCategoryName = null!;
+        private TextBox txtDescription = null!;
+        private TextBox txtKeyword = null!;
 
-        // Button
-        private Button btnLoad;
-        private Button btnAdd;
-        private Button btnUpdate;
-        private Button btnDelete;
-        private Button btnSearch;
+        // Controls nút bấm
+        private Button btnLoad = null!;
+        private Button btnAdd = null!;
+        private Button btnUpdate = null!;
+        private Button btnDelete = null!;
+        private Button btnClear = null!;
+        private Button btnSearch = null!;
 
         public FormCategoryManagement()
         {
             InitializeComponent();
+            Load += FormCategoryManagement_Load;
+        }
 
-            Load += async (s, e) =>
-            {
-                await LoadDataAsync();
-            };
+        private async void FormCategoryManagement_Load(object? sender, EventArgs e)
+        {
+            await LoadDataAsync();
         }
 
         // =========================================================
@@ -43,20 +42,16 @@ namespace MiniSupermarket.WinForms
         // =========================================================
         private void InitializeComponent()
         {
-            // =====================================================
-            // FORM
-            // =====================================================
+            // Form Setup
             Text = "Quản lý Danh mục hàng - FormCategoryManagement";
             StartPosition = FormStartPosition.CenterScreen;
-
             ClientSize = new Size(900, 560);
             MinimumSize = new Size(850, 500);
+            Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
 
-            Font = new Font("Segoe UI", 9F);
-
-            // =====================================================
+            // -----------------------------------------------------
             // GROUPBOX TÌM KIẾM
-            // =====================================================
+            // -----------------------------------------------------
             GroupBox grpSearch = new GroupBox
             {
                 Text = "Tìm kiếm",
@@ -69,11 +64,9 @@ namespace MiniSupermarket.WinForms
             {
                 Location = new Point(15, 28),
                 Size = new Size(350, 25),
-                Anchor = AnchorStyles.Left | AnchorStyles.Top
+                PlaceholderText = "Nhập từ khóa danh mục..."
             };
-
-            // Placeholder
-            txtKeyword.PlaceholderText = "Nhập từ khóa...";
+            txtKeyword.KeyDown += TxtKeyword_KeyDown;
 
             btnSearch = new Button
             {
@@ -81,6 +74,7 @@ namespace MiniSupermarket.WinForms
                 Location = new Point(375, 26),
                 Size = new Size(90, 28)
             };
+            btnSearch.Click += BtnSearch_Click;
 
             btnLoad = new Button
             {
@@ -88,149 +82,79 @@ namespace MiniSupermarket.WinForms
                 Location = new Point(475, 26),
                 Size = new Size(80, 28)
             };
-
-            btnSearch.Click += async (s, e) =>
-            {
-                await BtnSearch_Click(s, e);
-            };
-
-            btnLoad.Click += async (s, e) =>
-            {
-                await LoadDataAsync();
-            };
+            btnLoad.Click += BtnLoad_Click;
 
             grpSearch.Controls.Add(txtKeyword);
             grpSearch.Controls.Add(btnSearch);
             grpSearch.Controls.Add(btnLoad);
 
-            // =====================================================
+            // -----------------------------------------------------
             // PANEL CHÍNH
-            // =====================================================
+            // -----------------------------------------------------
             Panel mainPanel = new Panel
             {
                 Dock = DockStyle.Fill,
                 Padding = new Padding(8)
             };
 
-            // =====================================================
-            // GROUPBOX THÔNG TIN NHÓM HÀNG - BÊN PHẢI
-            // =====================================================
+            // -----------------------------------------------------
+            // GROUPBOX THÔNG TIN NHÓM HÀNG (BÊN PHẢI)
+            // -----------------------------------------------------
             GroupBox grpInfo = new GroupBox
             {
                 Text = "Thông tin Nhóm hàng",
                 Dock = DockStyle.Right,
-                Width = 260,
+                Width = 270,
                 Padding = new Padding(10)
             };
 
-            // -----------------------------
-            // MÃ ID
-            // -----------------------------
-            Label lblId = new Label
-            {
-                Text = "Mã ID",
-                AutoSize = true,
-                Location = new Point(12, 30)
-            };
-
+            Label lblId = new Label { Text = "Mã ID", AutoSize = true, Location = new Point(12, 30) };
             txtId = new TextBox
             {
                 Location = new Point(12, 50),
-                Width = 225,
+                Width = 240,
                 ReadOnly = true,
-                BackColor = Color.White
+                BackColor = Color.LightGray
             };
 
-            // -----------------------------
-            // TÊN NHÓM HÀNG
-            // -----------------------------
-            Label lblName = new Label
-            {
-                Text = "Tên Nhóm hàng",
-                AutoSize = true,
-                Location = new Point(12, 85)
-            };
-
+            Label lblName = new Label { Text = "Tên Nhóm hàng (*)", AutoSize = true, Location = new Point(12, 85) };
             txtCategoryName = new TextBox
             {
                 Location = new Point(12, 105),
-                Width = 225
+                Width = 240
             };
 
-            // -----------------------------
-            // MÔ TẢ
-            // -----------------------------
-            Label lblDescription = new Label
-            {
-                Text = "Mô tả",
-                AutoSize = true,
-                Location = new Point(12, 140)
-            };
-
+            Label lblDescription = new Label { Text = "Mô tả", AutoSize = true, Location = new Point(12, 140) };
             txtDescription = new TextBox
             {
                 Location = new Point(12, 160),
-                Width = 225,
-                Height = 75,
+                Width = 240,
+                Height = 85,
                 Multiline = true,
                 ScrollBars = ScrollBars.Vertical
             };
 
-            // -----------------------------
-            // BUTTON
-            // -----------------------------
-            btnAdd = new Button
-            {
-                Text = "Thêm mới",
-                Size = new Size(70, 30),
-                Location = new Point(12, 250)
-            };
+            // Buttons thao tác
+            btnAdd = new Button { Text = "Thêm mới", Size = new Size(75, 30), Location = new Point(12, 260) };
+            btnUpdate = new Button { Text = "Cập nhật", Size = new Size(75, 30), Location = new Point(95, 260), Enabled = false };
+            btnDelete = new Button { Text = "Xóa", Size = new Size(75, 30), Location = new Point(178, 260), Enabled = false };
+            btnClear = new Button { Text = "Làm mới", Size = new Size(241, 28), Location = new Point(12, 300) };
 
-            btnUpdate = new Button
-            {
-                Text = "Cập nhật",
-                Size = new Size(70, 30),
-                Location = new Point(88, 250)
-            };
+            btnAdd.Click += BtnAdd_Click;
+            btnUpdate.Click += BtnUpdate_Click;
+            btnDelete.Click += BtnDelete_Click;
+            btnClear.Click += (s, e) => ClearInputs();
 
-            btnDelete = new Button
-            {
-                Text = "Xóa",
-                Size = new Size(70, 30),
-                Location = new Point(164, 250)
-            };
+            grpInfo.Controls.AddRange(new Control[] {
+                lblId, txtId,
+                lblName, txtCategoryName,
+                lblDescription, txtDescription,
+                btnAdd, btnUpdate, btnDelete, btnClear
+            });
 
-            btnAdd.Click += async (s, e) =>
-            {
-                await BtnAdd_Click(s, e);
-            };
-
-            btnUpdate.Click += async (s, e) =>
-            {
-                await BtnUpdate_Click(s, e);
-            };
-
-            btnDelete.Click += async (s, e) =>
-            {
-                await BtnDelete_Click(s, e);
-            };
-
-            grpInfo.Controls.Add(lblId);
-            grpInfo.Controls.Add(txtId);
-
-            grpInfo.Controls.Add(lblName);
-            grpInfo.Controls.Add(txtCategoryName);
-
-            grpInfo.Controls.Add(lblDescription);
-            grpInfo.Controls.Add(txtDescription);
-
-            grpInfo.Controls.Add(btnAdd);
-            grpInfo.Controls.Add(btnUpdate);
-            grpInfo.Controls.Add(btnDelete);
-
-            // =====================================================
-            // GROUPBOX DANH SÁCH NHÓM HÀNG - BÊN TRÁI
-            // =====================================================
+            // -----------------------------------------------------
+            // GROUPBOX DANH SÁCH NHÓM HÀNG (BÊN TRÁI)
+            // -----------------------------------------------------
             GroupBox grpList = new GroupBox
             {
                 Text = "Danh sách Nhóm hàng",
@@ -238,133 +162,99 @@ namespace MiniSupermarket.WinForms
                 Padding = new Padding(8)
             };
 
-            // =====================================================
-            // DATAGRIDVIEW
-            // =====================================================
             dgvCategories = new DataGridView
             {
                 Dock = DockStyle.Fill,
-
                 ReadOnly = true,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
                 AllowUserToResizeRows = false,
-
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 MultiSelect = false,
-
                 AutoGenerateColumns = false,
-                AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None,
-
                 BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
-
-                RowHeadersVisible = true,
-
-                AutoSizeColumnsMode =
-                    DataGridViewAutoSizeColumnsMode.Fill
+                RowHeadersVisible = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
             };
 
-            // =====================================================
-            // CỘT MÃ ID
-            // =====================================================
-            DataGridViewTextBoxColumn colId =
-                new DataGridViewTextBoxColumn
-                {
-                    Name = "CategoryId",
-                    HeaderText = "Mã ID",
-                    DataPropertyName = "CategoryId",
-                    FillWeight = 20
-                };
+            // Cột DataGridView
+            dgvCategories.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "CategoryId",
+                HeaderText = "Mã ID",
+                DataPropertyName = "CategoryId",
+                FillWeight = 20
+            });
 
-            // =====================================================
-            // CỘT TÊN NHÓM HÀNG
-            // =====================================================
-            DataGridViewTextBoxColumn colName =
-                new DataGridViewTextBoxColumn
-                {
-                    Name = "CategoryName",
-                    HeaderText = "Tên Nhóm hàng",
-                    DataPropertyName = "CategoryName",
-                    FillWeight = 40
-                };
+            dgvCategories.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "CategoryName",
+                HeaderText = "Tên Nhóm hàng",
+                DataPropertyName = "CategoryName",
+                FillWeight = 40
+            });
 
-            // =====================================================
-            // CỘT MÔ TẢ
-            // =====================================================
-            DataGridViewTextBoxColumn colDescription =
-                new DataGridViewTextBoxColumn
-                {
-                    Name = "Description",
-                    HeaderText = "Mô tả",
-                    DataPropertyName = "Description",
-                    FillWeight = 40
-                };
+            dgvCategories.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "Description",
+                HeaderText = "Mô tả",
+                DataPropertyName = "Description",
+                FillWeight = 40
+            });
 
-            dgvCategories.Columns.Add(colId);
-            dgvCategories.Columns.Add(colName);
-            dgvCategories.Columns.Add(colDescription);
-
-            // Click vào dòng
             dgvCategories.CellClick += DgvCategories_CellClick;
-
-            // Double click cũng chọn
-            dgvCategories.CellDoubleClick += DgvCategories_CellClick;
 
             grpList.Controls.Add(dgvCategories);
 
-            // =====================================================
-            // THÊM VÀO PANEL CHÍNH
-            // =====================================================
+            // Ghép Panel
             mainPanel.Controls.Add(grpList);
             mainPanel.Controls.Add(grpInfo);
 
-            // =====================================================
-            // THÊM CONTROL VÀO FORM
-            // =====================================================
             Controls.Add(mainPanel);
             Controls.Add(grpSearch);
         }
 
         // =========================================================
-        // CLICK DÒNG TRONG DATAGRIDVIEW
+        // TƯƠNG TÁC GIAO DIỆN & EVENT HANDLERS
         // =========================================================
-        private void DgvCategories_CellClick(
-            object? sender,
-            DataGridViewCellEventArgs e)
+        private void DgvCategories_CellClick(object? sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0)
+            if (e.RowIndex < 0 || e.RowIndex >= dgvCategories.Rows.Count)
                 return;
 
-            if (dgvCategories.Rows.Count <= e.RowIndex)
-                return;
+            DataGridViewRow row = dgvCategories.Rows[e.RowIndex];
 
-            DataGridViewRow row =
-                dgvCategories.Rows[e.RowIndex];
+            txtId.Text = row.Cells["CategoryId"].Value?.ToString() ?? string.Empty;
+            txtCategoryName.Text = row.Cells["CategoryName"].Value?.ToString() ?? string.Empty;
+            txtDescription.Text = row.Cells["Description"].Value?.ToString() ?? string.Empty;
 
-            txtId.Text =
-                row.Cells["CategoryId"].Value?.ToString()
-                ?? string.Empty;
-
-            txtCategoryName.Text =
-                row.Cells["CategoryName"].Value?.ToString()
-                ?? string.Empty;
-
-            txtDescription.Text =
-                row.Cells["Description"].Value?.ToString()
-                ?? string.Empty;
+            // Bật trạng thái sửa/xóa khi đã chọn bản ghi
+            btnUpdate.Enabled = true;
+            btnDelete.Enabled = true;
+            btnAdd.Enabled = false;
         }
 
+        private async void TxtKeyword_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true; // Chặn tiếng beep hệ thống
+                await SearchAsync();
+            }
+        }
+
+        private async void BtnSearch_Click(object? sender, EventArgs e) => await SearchAsync();
+        private async void BtnLoad_Click(object? sender, EventArgs e) => await LoadDataAsync();
+
         // =========================================================
-        // LOAD DATA
+        // CÁC TÁC VỤ DỮ LIỆU (CRUD & API)
         // =========================================================
         private async Task LoadDataAsync()
         {
             try
             {
-
                 Cursor = Cursors.WaitCursor;
-
                 var categories = await ApiClientService.GetAsync<List<CategoryDto>>("categories") ?? new List<CategoryDto>();
 
                 dgvCategories.DataSource = null;
@@ -374,11 +264,7 @@ namespace MiniSupermarket.WinForms
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    "Lỗi kết nối Server:\n\n" + ex.Message,
-                    "Lỗi",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                ShowErrorMessage("Lỗi kết nối Server:\n\n" + ex.Message);
             }
             finally
             {
@@ -386,25 +272,45 @@ namespace MiniSupermarket.WinForms
             }
         }
 
-        // =========================================================
-        // THÊM
-        // =========================================================
-        private async Task BtnAdd_Click(
-            object? sender,
-            EventArgs e)
+        private async Task SearchAsync()
         {
-            // Kiểm tra dữ liệu
-            if (string.IsNullOrWhiteSpace(txtCategoryName.Text))
-            {
-                MessageBox.Show(
-                    "Vui lòng nhập tên nhóm hàng!",
-                    "Thông báo",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
+            string keyword = txtKeyword.Text.Trim();
 
-                txtCategoryName.Focus();
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                await LoadDataAsync();
                 return;
             }
+
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                var result = await ApiClientService.GetAsync<List<CategoryDto>>($"categories/search?keyword={Uri.EscapeDataString(keyword)}")
+                             ?? new List<CategoryDto>();
+
+                dgvCategories.DataSource = null;
+                dgvCategories.DataSource = result;
+
+                if (result.Count == 0)
+                {
+                    MessageBox.Show("Không tìm thấy nhóm hàng phù hợp!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+                ClearInputs();
+            }
+            catch (Exception ex)
+            {
+                ShowErrorMessage("Lỗi tìm kiếm:\n\n" + ex.Message);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+        }
+
+        private async void BtnAdd_Click(object? sender, EventArgs e)
+        {
+            if (!ValidateInput()) return;
 
             var newCat = new
             {
@@ -418,76 +324,30 @@ namespace MiniSupermarket.WinForms
 
                 if (response.IsSuccessStatusCode)
                 {
-                    MessageBox.Show(
-                        "Thêm mới thành công!",
-                        "Thông báo",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-
+                    MessageBox.Show("Thêm mới thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     await LoadDataAsync();
-                    ClearInputs();
                 }
                 else
                 {
-                    string error =
-                        await response.Content.ReadAsStringAsync();
-
-                    MessageBox.Show(
-                        "Thêm mới thất bại!\n\n" + error,
-                        "Lỗi",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
+                    string error = await response.Content.ReadAsStringAsync();
+                    MessageBox.Show("Thêm mới thất bại!\n\n" + error, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    "Lỗi:\n\n" + ex.Message,
-                    "Lỗi",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                ShowErrorMessage(ex.Message);
             }
         }
 
-        // =========================================================
-        // CẬP NHẬT
-        // =========================================================
-        private async Task BtnUpdate_Click(
-            object? sender,
-            EventArgs e)
+        private async void BtnUpdate_Click(object? sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtId.Text))
-            {
-                MessageBox.Show(
-                    "Vui lòng chọn nhóm hàng cần sửa!",
-                    "Cảnh báo",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
-
-                return;
-            }
-
             if (!int.TryParse(txtId.Text, out int id))
             {
-                MessageBox.Show(
-                    "Mã nhóm hàng không hợp lệ!",
-                    "Lỗi",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-
+                MessageBox.Show("Vui lòng chọn nhóm hàng cần sửa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(txtCategoryName.Text))
-            {
-                MessageBox.Show(
-                    "Vui lòng nhập tên nhóm hàng!",
-                    "Cảnh báo",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
-
-                return;
-            }
+            if (!ValidateInput()) return;
 
             var updateCat = new
             {
@@ -502,75 +362,36 @@ namespace MiniSupermarket.WinForms
 
                 if (response.IsSuccessStatusCode)
                 {
-                    MessageBox.Show(
-                        "Cập nhật thành công!",
-                        "Thông báo",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-
+                    MessageBox.Show("Cập nhật thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     await LoadDataAsync();
-                    ClearInputs();
                 }
                 else
                 {
-                    string error =
-                        await response.Content.ReadAsStringAsync();
-
-                    MessageBox.Show(
-                        "Cập nhật thất bại!\n\n" + error,
-                        "Lỗi",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
+                    string error = await response.Content.ReadAsStringAsync();
+                    MessageBox.Show("Cập nhật thất bại!\n\n" + error, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    "Lỗi:\n\n" + ex.Message,
-                    "Lỗi",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                ShowErrorMessage(ex.Message);
             }
         }
 
-        // =========================================================
-        // XÓA
-        // =========================================================
-        private async Task BtnDelete_Click(
-            object? sender,
-            EventArgs e)
+        private async void BtnDelete_Click(object? sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtId.Text))
-            {
-                MessageBox.Show(
-                    "Vui lòng chọn nhóm hàng cần xóa!",
-                    "Cảnh báo",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
-
-                return;
-            }
-
             if (!int.TryParse(txtId.Text, out int id))
             {
-                MessageBox.Show(
-                    "Mã nhóm hàng không hợp lệ!",
-                    "Lỗi",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-
+                MessageBox.Show("Vui lòng chọn nhóm hàng cần xóa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            var confirm =
-                MessageBox.Show(
-                    $"Bạn có chắc muốn xóa nhóm hàng ID = {id}?",
-                    "Xác nhận xóa",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
+            var confirm = MessageBox.Show(
+                $"Bạn có chắc muốn xóa nhóm hàng ID = {id}?",
+                "Xác nhận xóa",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
 
-            if (confirm != DialogResult.Yes)
-                return;
+            if (confirm != DialogResult.Yes) return;
 
             try
             {
@@ -578,89 +399,35 @@ namespace MiniSupermarket.WinForms
 
                 if (response.IsSuccessStatusCode)
                 {
-                    MessageBox.Show(
-                        "Xóa thành công!",
-                        "Thông báo",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-
+                    MessageBox.Show("Xóa thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     await LoadDataAsync();
-                    ClearInputs();
                 }
                 else
                 {
-                    string error =
-                        await response.Content.ReadAsStringAsync();
-
-                    MessageBox.Show(
-                        "Xóa thất bại!\n\n" + error,
-                        "Lỗi",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
+                    string error = await response.Content.ReadAsStringAsync();
+                    MessageBox.Show("Xóa thất bại!\n\n" + error, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    "Lỗi:\n\n" + ex.Message,
-                    "Lỗi",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                ShowErrorMessage(ex.Message);
             }
         }
 
         // =========================================================
-        // TÌM KIẾM
+        // PHƯƠNG THỨC BỔ TRỢ
         // =========================================================
-        private async Task BtnSearch_Click(
-            object? sender,
-            EventArgs e)
+        private bool ValidateInput()
         {
-            string keyword =
-                txtKeyword.Text.Trim();
-
-            // Nếu không nhập từ khóa -> load toàn bộ
-            if (string.IsNullOrWhiteSpace(keyword))
+            if (string.IsNullOrWhiteSpace(txtCategoryName.Text))
             {
-                await LoadDataAsync();
-                return;
+                MessageBox.Show("Vui lòng nhập tên nhóm hàng!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtCategoryName.Focus();
+                return false;
             }
-
-            try
-            {
-                Cursor = Cursors.WaitCursor;
-
-                var result = await ApiClientService.GetAsync<List<CategoryDto>>($"categories/search?keyword={Uri.EscapeDataString(keyword)}") ?? new List<CategoryDto>();
-
-                dgvCategories.DataSource = null;
-                dgvCategories.DataSource = result;
-
-                if (result == null || result.Count == 0)
-                {
-                    MessageBox.Show(
-                        "Không tìm thấy nhóm hàng phù hợp!",
-                        "Thông báo",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "Lỗi tìm kiếm:\n\n" + ex.Message,
-                    "Lỗi",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
-            finally
-            {
-                Cursor = Cursors.Default;
-            }
+            return true;
         }
 
-        // =========================================================
-        // XÓA INPUT
-        // =========================================================
         private void ClearInputs()
         {
             txtId.Clear();
@@ -668,6 +435,16 @@ namespace MiniSupermarket.WinForms
             txtDescription.Clear();
 
             dgvCategories.ClearSelection();
+
+            // Trạng thái Form ban đầu
+            btnAdd.Enabled = true;
+            btnUpdate.Enabled = false;
+            btnDelete.Enabled = false;
+        }
+
+        private void ShowErrorMessage(string message)
+        {
+            MessageBox.Show("Lỗi:\n\n" + message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -677,10 +454,7 @@ namespace MiniSupermarket.WinForms
     public class CategoryDto
     {
         public int CategoryId { get; set; }
-
-        public string CategoryName { get; set; }
-            = string.Empty;
-
+        public string CategoryName { get; set; } = string.Empty;
         public string? Description { get; set; }
     }
 }

@@ -1,74 +1,149 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using MiniSupermarket.API.Data;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// JWT configuration
-var jwtSecret = builder.Configuration["JwtSettings:Secret"] ?? "SupermarketSecretKeyDoAnMonHoc2026SecureString!!";
+// =========================
+// DATABASE CONFIGURATION
+// =========================
+
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<SupermarketDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+
+// =========================
+// JWT CONFIGURATION
+// =========================
+
+var jwtSecret =
+    builder.Configuration["JwtSettings:Secret"]
+    ?? "SupermarketSecretKeyDoAnMonHoc2026SecureString!!";
 
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme =
+        JwtBearerDefaults.AuthenticationScheme;
+
+    options.DefaultChallengeScheme =
+        JwtBearerDefaults.AuthenticationScheme;
 })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters =
+        new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSecret)),
+
+            IssuerSigningKey =
+                new SymmetricSecurityKey(
+                    Encoding.ASCII.GetBytes(jwtSecret)
+                ),
+
             ValidateIssuer = false,
             ValidateAudience = false
         };
-    });
+});
 
-// Add services to the container.
-// Register global action filter and configure Swagger to support JWT Bearer
+
+// =========================
+// CONTROLLERS
+// =========================
+
 builder.Services.AddControllers(options =>
 {
-    options.Filters.Add<MiniSupermarket.API.Filters.RequestTimingFilter>();
+    options.Filters.Add<
+        MiniSupermarket.API.Filters.RequestTimingFilter>();
 });
+
+
+// =========================
+// SWAGGER
+// =========================
 
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(c =>
 {
-    // Configure JWT authentication for Swagger
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
-        Name = "Authorization",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-
-    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement {
+    c.AddSecurityDefinition(
+        "Bearer",
+        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            }, new string[] { }
-        }
-    });
+            Description =
+                "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+
+            Name = "Authorization",
+
+            In =
+                Microsoft.OpenApi.Models.ParameterLocation.Header,
+
+            Type =
+                Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+
+            Scheme = "Bearer"
+        });
+
+    c.AddSecurityRequirement(
+        new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+        {
+            {
+                new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Reference =
+                        new Microsoft.OpenApi.Models.OpenApiReference
+                        {
+                            Type =
+                                Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+
+                            Id = "Bearer"
+                        }
+                },
+
+                new string[] { }
+            }
+        });
 });
+
+
+// =========================
+// BUILD APPLICATION
+// =========================
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
+// =========================
+// SWAGGER
+// =========================
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+
+// =========================
+// HTTP PIPELINE
+// =========================
+
 app.UseHttpsRedirection();
+
 
 // Authentication must come before Authorization
 app.UseAuthentication();
+
 app.UseAuthorization();
+
+
+// =========================
+// CONTROLLERS
+// =========================
 
 app.MapControllers();
 

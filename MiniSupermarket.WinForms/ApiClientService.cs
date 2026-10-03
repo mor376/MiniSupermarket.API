@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -9,23 +10,47 @@ namespace MiniSupermarket.WinForms
 {
     public static class ApiClientService
     {
-        // Ensure this matches your API URL (use the HTTPS port from launchSettings.json)
-        private static readonly HttpClient _client = new HttpClient { BaseAddress = new Uri("https://localhost:7035/api/") };
+        private static readonly HttpClient _client;
+
+        static ApiClientService()
+        {
+            // Cấu hình bỏ qua xác thực chứng chỉ SSL tự ký ở môi trường Development
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
+
+            _client = new HttpClient(handler)
+            {
+                BaseAddress = new Uri("https://localhost:7035/api/"),
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+        }
 
         public static async Task<bool> LoginAsync(string username, string password)
         {
-            var loginObj = new { Username = username, Password = password };
-            var response = await _client.PostAsJsonAsync("auth/login", loginObj);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var jsonString = await response.Content.ReadAsStringAsync();
-                using var doc = JsonDocument.Parse(jsonString);
-                SessionManager.JwtToken = doc.RootElement.GetProperty("token").GetString() ?? string.Empty;
-                SessionManager.CurrentRole = doc.RootElement.GetProperty("role").GetString() ?? string.Empty;
-                return true;
+                var loginObj = new { Username = username, Password = password };
+                var response = await _client.PostAsJsonAsync("auth/login", loginObj);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(jsonString);
+
+                    SessionManager.JwtToken = doc.RootElement.TryGetProperty("token", out var tokenProp) ? tokenProp.GetString() ?? string.Empty : string.Empty;
+                    SessionManager.CurrentUsername = username;
+                    SessionManager.CurrentRole = doc.RootElement.TryGetProperty("role", out var roleProp) ? roleProp.GetString() ?? string.Empty : string.Empty;
+
+                    return true;
+                }
+                return false;
             }
-            return false;
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi kết nối API: {ex.Message}", ex);
+            }
         }
 
         private static void AttachToken()
@@ -44,15 +69,22 @@ namespace MiniSupermarket.WinForms
         {
             AttachToken();
             var response = await _client.GetAsync(endpoint);
+
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadFromJsonAsync<T>();
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                throw new Exception("Phiên làm việc hết hạn hoặc chưa đăng nhập!");
+                throw new Exception("Phiên làm việc đã hết hạn hoặc chưa đăng nhập!");
             }
-            throw new Exception("Lỗi khi gọi dữ liệu từ Server.");
+            else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                throw new Exception("Tài khoản của bạn không có quyền truy cập chức năng này!");
+            }
+
+            var errDetail = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Lỗi từ Server ({response.StatusCode}): {errDetail}");
         }
 
         public static async Task<HttpResponseMessage> PostAsJsonAsync(string endpoint, object obj)
