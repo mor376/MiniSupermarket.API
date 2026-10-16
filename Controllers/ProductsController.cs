@@ -90,8 +90,10 @@ namespace MiniSupermarket.API.Controllers
 
             existingProd.Barcode = product.Barcode;
             existingProd.ProductName = product.ProductName;
-            existingProd.Price = product.Price;
+            existingProd.CostPrice = product.CostPrice;
+            existingProd.SellingPrice = product.SellingPrice;
             existingProd.StockQuantity = product.StockQuantity;
+            existingProd.Unit = product.Unit;
             existingProd.CategoryId = product.CategoryId;
 
             await _context.SaveChangesAsync();

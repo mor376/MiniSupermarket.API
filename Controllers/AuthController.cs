@@ -10,6 +10,28 @@ namespace MiniSupermarket.API.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
+        private static readonly IReadOnlyDictionary<string, string> DemoAccounts =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["admin01"] = "Admin",
+                ["admin02"] = "Admin",
+                ["admin_backup"] = "Admin",
+                ["supervisor"] = "Admin",
+                ["cashier01"] = "Cashier",
+                ["cashier02"] = "Cashier",
+                ["cashier03"] = "Cashier",
+                ["cashier04"] = "Cashier",
+                ["cashier05"] = "Cashier",
+                ["cashier06"] = "Cashier",
+                ["ware01"] = "Warehouse",
+                ["ware02"] = "Warehouse",
+                ["ware03"] = "Warehouse",
+                ["ware04"] = "Warehouse",
+                ["ware05"] = "Warehouse",
+                ["admin"] = "Admin",
+                ["cashier"] = "Cashier"
+            };
+
         private readonly IConfiguration _configuration;
 
         public AuthController(IConfiguration configuration)
@@ -21,16 +43,12 @@ namespace MiniSupermarket.API.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequestDto request)
         {
-            // Kiểm tra tài khoản mẫu (Trong thực tế sẽ truy vấn qua EF Core / SQL Server)
-            if (request.Username == "admin" && request.Password == "123456")
+            if (!string.IsNullOrWhiteSpace(request.Username)
+                && request.Password == "123456"
+                && DemoAccounts.TryGetValue(request.Username, out var role))
             {
-                var token = GenerateJwtToken(request.Username, "Admin");
-                return Ok(new { success = true, token = token, role = "Admin" });
-            }
-            else if (request.Username == "cashier" && request.Password == "123456")
-            {
-                var token = GenerateJwtToken(request.Username, "Cashier");
-                return Ok(new { success = true, token = token, role = "Cashier" });
+                var token = GenerateJwtToken(request.Username, role);
+                return Ok(new { success = true, token, role });
             }
 
             return Unauthorized(new { success = false, message = "Sai tài khoản hoặc mật khẩu!" });

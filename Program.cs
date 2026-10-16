@@ -116,6 +116,11 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<SupermarketDbContext>();
+    dbContext.Database.Migrate();
+}
 
 // =========================
 // SWAGGER

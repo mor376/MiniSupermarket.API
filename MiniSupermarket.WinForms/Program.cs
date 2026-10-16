@@ -10,21 +10,22 @@ namespace MiniSupermarket.WinForms
         {
             ApplicationConfiguration.Initialize();
 
-            // THỬ NGHIỆM ĐĂNG NHẬP THEO VAI TRÒ (Bỏ comment 1 trong 3 dòng dưới để kiểm thử):
+            while (true)
+            {
+                using var loginForm = new FormLogin();
+                if (loginForm.ShowDialog() != DialogResult.OK)
+                {
+                    return;
+                }
 
-            // Dòng 1: Đăng nhập vai trò Admin (Hiển thị toàn bộ 6 nút chức năng)
-            SessionManager.CurrentUsername = "admin01";
-            SessionManager.CurrentRole = "Admin";
+                using var shell = new FormMainShell();
+                Application.Run(shell);
 
-            // Dòng 2: Đăng nhập vai trò Cashier (Chỉ hiển thị nút Bán hàng POS và Khách hàng)
-            // SessionManager.CurrentUsername = "cashier01";
-            // SessionManager.CurrentRole = "Cashier";
-
-            // Dòng 3: Đăng nhập vai trò Warehouse (Chỉ hiển thị nút Danh mục và Sản phẩm)
-            // SessionManager.CurrentUsername = "ware01";
-            // SessionManager.CurrentRole = "Warehouse";
-
-            Application.Run(new FormMainShell());
+                if (!string.IsNullOrEmpty(SessionManager.JwtToken))
+                {
+                    return;
+                }
+            }
         }
     }
 }

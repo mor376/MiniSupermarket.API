@@ -51,12 +51,8 @@ namespace MiniSupermarket.WinForms
                 var ok = await ApiClientService.LoginAsync(username, password);
                 if (ok)
                 {
-                    MessageBox.Show($"Đăng nhập thành công với quyền: {SessionManager.CurrentRole}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    // Open main form depending on role (both can access categories; role may affect UI controls)
-                    using var mainForm = new FormCategoryManagement();
-                    this.Hide();
-                    mainForm.ShowDialog();
-                    this.Close();
+                    DialogResult = DialogResult.OK;
+                    Close();
                 }
                 else
                 {

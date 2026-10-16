@@ -8,6 +8,7 @@ namespace MiniSupermarket.WinForms
     public partial class FormMainShell : Form
     {
         private Form? _activeForm = null;
+        private Timer? _clockTimer;
 
         public FormMainShell()
         {
@@ -16,21 +17,34 @@ namespace MiniSupermarket.WinForms
 
         private void FormMainShell_Load(object sender, EventArgs e)
         {
-            // Hiển thị thông tin người dùng hiện tại
-            lblUserInfo.Text = $"Nhân viên: {SessionManager.CurrentUsername} | Vai trò: [{SessionManager.CurrentRole}]";
+            lblUserInfo.Text = $"{SessionManager.CurrentUsername}  ·  {SessionManager.CurrentRole}  ·  {DateTime.Now:HH:mm:ss}";
+            _clockTimer = new Timer { Interval = 1000 };
+            _clockTimer.Tick += (_, _) => lblUserInfo.Text = $"{SessionManager.CurrentUsername}  ·  {SessionManager.CurrentRole}  ·  {DateTime.Now:HH:mm:ss}";
+            _clockTimer.Start();
 
-            // Áp dụng phân quyền hiển thị menu Sidebar
-            ApplyRolePermissions(SessionManager.CurrentRole);
+            if (!ApplyRolePermissions(SessionManager.CurrentRole))
+            {
+                MessageBox.Show("Tài khoản chưa được phân quyền hợp lệ!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                Close();
+                return;
+            }
 
-            // Mở màn hình mặc định tương ứng với vai trò
             OpenDefaultScreenByRole(SessionManager.CurrentRole);
         }
 
-        private void OpenChildForm(Form childForm, string screenTitle, Button senderButton)
+        private bool OpenChildForm(Form childForm, string screenTitle, Button senderButton)
         {
+            if (!CanAccess(senderButton))
+            {
+                childForm.Dispose();
+                MessageBox.Show("Bạn không có quyền truy cập chức năng này!", "Từ chối quyền", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                return false;
+            }
+
             if (_activeForm != null)
             {
                 _activeForm.Close();
+                _activeForm.Dispose();
             }
 
             HighlightActiveButton(senderButton);
@@ -47,6 +61,7 @@ namespace MiniSupermarket.WinForms
             lblTitle.Text = screenTitle;
             childForm.BringToFront();
             childForm.Show();
+            return true;
         }
 
         private void HighlightActiveButton(Button activeButton)
@@ -64,9 +79,9 @@ namespace MiniSupermarket.WinForms
         /// <summary>
         /// Phân quyền ẩn / hiện menu Sidebar dựa vào Role từ JWT Token
         /// </summary>
-        private void ApplyRolePermissions(string role)
+        private bool ApplyRolePermissions(string role)
         {
-            string upperRole = role.ToUpper();
+            string upperRole = role.Trim().ToUpperInvariant();
 
             switch (upperRole)
             {
@@ -78,7 +93,7 @@ namespace MiniSupermarket.WinForms
                     btnCustomer.Visible = true;
                     btnReports.Visible = true;
                     btnUserManage.Visible = true;
-                    break;
+                    return true;
 
                 case "CASHIER":
                     // Bán hàng (Thu ngân) chỉ được xem POS & Khách hàng
@@ -88,7 +103,7 @@ namespace MiniSupermarket.WinForms
                     btnProduct.Visible = false;
                     btnReports.Visible = false;
                     btnUserManage.Visible = false;
-                    break;
+                    return true;
 
                 case "WAREHOUSE":
                     // Nhân viên kho chỉ được làm việc với Danh mục & Sản phẩm
@@ -98,66 +113,87 @@ namespace MiniSupermarket.WinForms
                     btnUserManage.Visible = false;
                     btnCategory.Visible = true;
                     btnProduct.Visible = true;
-                    break;
+                    return true;
 
                 default:
-                    MessageBox.Show("Tài khoản chưa được phân quyền hợp lệ!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    this.Close();
-                    break;
+                    btnPOS.Visible = false;
+                    btnCategory.Visible = false;
+                    btnProduct.Visible = false;
+                    btnCustomer.Visible = false;
+                    btnReports.Visible = false;
+                    btnUserManage.Visible = false;
+                    return false;
             }
+        }
+
+        private bool CanAccess(Button target)
+        {
+            string role = SessionManager.CurrentRole.Trim();
+            if (role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (role.Equals("Cashier", StringComparison.OrdinalIgnoreCase))
+            {
+                return target == btnPOS || target == btnCustomer;
+            }
+
+            if (role.Equals("Warehouse", StringComparison.OrdinalIgnoreCase))
+            {
+                return target == btnCategory || target == btnProduct;
+            }
+
+            return false;
         }
 
         private void OpenDefaultScreenByRole(string role)
         {
-            string upperRole = role.ToUpper();
-            if (upperRole == "ADMIN" || upperRole == "WAREHOUSE")
+            switch (role.Trim().ToUpperInvariant())
             {
-                OpenChildForm(new FormCategoryManagement(), "QUẢN LÝ DANH MỤC NHÓM HÀNG", btnCategory);
-            }
-            else if (upperRole == "CASHIER")
-            {
-                OpenChildForm(new FormCustomerManagement(), "QUẢN LÝ KHÁCH HÀNG & TÍCH ĐIỂM", btnCustomer);
+                case "ADMIN":
+                    OpenChildForm(new FormCategoryManagement(), "TRANG CHỦ  >  DANH MỤC", btnCategory);
+                    break;
+                case "CASHIER":
+                    OpenChildForm(new FormPosDashboard(), "TRANG CHỦ  >  POS", btnPOS);
+                    break;
+                case "WAREHOUSE":
+                    OpenChildForm(new FormProductCatalog(), "TRANG CHỦ  >  SẢN PHẨM", btnProduct);
+                    break;
             }
         }
 
         private void btnCategory_Click(object sender, EventArgs e)
         {
-            OpenChildForm(new FormCategoryManagement(), "QUẢN LÝ DANH MỤC SẢN PHẨM", btnCategory);
+            OpenChildForm(new FormCategoryManagement(), "TRANG CHỦ  >  DANH MỤC", btnCategory);
         }
 
         private void btnCustomer_Click(object sender, EventArgs e)
         {
-            OpenChildForm(new FormCustomerManagement(), "QUẢN LÝ KHÁCH HÀNG THÂN THIẾT", btnCustomer);
+            OpenChildForm(new FormCustomerDashboard(), "TRANG CHỦ  >  KHÁCH HÀNG", btnCustomer);
         }
 
         private void btnProduct_Click(object sender, EventArgs e)
         {
-            OpenChildForm(new FormProductManagement(), "QUẢN LÝ SẢN PHẨM & KHO HÀNG", btnProduct);
+            OpenChildForm(new FormProductCatalog(), "TRANG CHỦ  >  SẢN PHẨM", btnProduct);
         }
 
         private void btnPOS_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Màn hình Quầy bán hàng (POS) đang được phát triển!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            OpenChildForm(new FormPosDashboard(), "TRANG CHỦ  >  POS", btnPOS);
         }
 
         private void btnReports_Click(object sender, EventArgs e)
         {
-            if (SessionManager.CurrentRole.ToUpper() != "ADMIN")
-            {
-                MessageBox.Show("Bạn không có quyền truy cập báo cáo doanh thu!", "Từ chối quyền", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                return;
-            }
-            MessageBox.Show("Màn hình Báo cáo Doanh thu đang được phát triển!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            OpenChildForm(new FormAnalyticsDashboard(), "TRANG CHỦ  >  BÁO CÁO DOANH THU", btnReports);
         }
 
         private void btnUserManage_Click(object sender, EventArgs e)
         {
-            if (SessionManager.CurrentRole.ToUpper() != "ADMIN")
-            {
-                MessageBox.Show("Bạn không có quyền quản trị tài khoản!", "Từ chối quyền", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                return;
-            }
-            MessageBox.Show("Màn hình Quản trị Tài khoản đang được phát triển!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            OpenChildForm(
+                new FormModulePlaceholder("Cài đặt & phân quyền", "Tài khoản đăng nhập hiện là dữ liệu demo trong bộ nhớ API; màn hình CRUD chưa được kết nối với bảng Users."),
+                "TRANG CHỦ  >  CÀI ĐẶT",
+                btnUserManage);
         }
 
         /// <summary>
@@ -168,26 +204,25 @@ namespace MiniSupermarket.WinForms
             var result = MessageBox.Show("Bạn có muốn đăng xuất tài khoản này không?", "Xác nhận đăng xuất", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (result == DialogResult.Yes)
             {
-                // 1. Xóa thông tin phiên làm việc
                 SessionManager.JwtToken = string.Empty;
                 SessionManager.CurrentUsername = string.Empty;
                 SessionManager.CurrentRole = string.Empty;
-
-                // 2. Mở lại Form Đăng nhập (Thay FormLogin bằng tên Form đăng nhập trong dự án của bạn)
-                this.Hide();
-                FormLogin loginForm = new FormLogin();
-                if (loginForm.ShowDialog() == DialogResult.OK)
-                {
-                    // Đăng nhập tài khoản mới thành công -> Khởi tạo lại Main Shell
-                    this.Show();
-                    FormMainShell_Load(sender, e);
-                }
-                else
-                {
-                    // Nếu tắt form đăng nhập thì đóng hẳn ứng dụng
-                    this.Close();
-                }
+                Close();
             }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            _clockTimer?.Stop();
+            _clockTimer?.Dispose();
+            if (_activeForm != null)
+            {
+                _activeForm.Close();
+                _activeForm.Dispose();
+                _activeForm = null;
+            }
+
+            base.OnFormClosed(e);
         }
     }
 }

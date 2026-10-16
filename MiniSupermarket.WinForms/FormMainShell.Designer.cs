@@ -62,16 +62,16 @@ namespace MiniSupermarket.WinForms
             this.lblLogo.Name = "lblLogo";
             this.lblLogo.Size = new System.Drawing.Size(230, 60);
             this.lblLogo.TabIndex = 0;
-            this.lblLogo.Text = "🛒 MiniMart POS";
+            this.lblLogo.Text = "🛒  MiniMart An Phước";
             this.lblLogo.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
             // Sidebar Buttons
             this.SetupButton(this.btnPOS, "🛒  Bán hàng (POS)", 60, this.btnPOS_Click);
-            this.SetupButton(this.btnCategory, "📁  Quản lý Danh mục", 105, this.btnCategory_Click);
-            this.SetupButton(this.btnProduct, "📦  Quản lý Sản phẩm", 150, this.btnProduct_Click);
+            this.SetupButton(this.btnCategory, "📁  Danh mục hàng hóa", 105, this.btnCategory_Click);
+            this.SetupButton(this.btnProduct, "📦  Sản phẩm & Giá", 150, this.btnProduct_Click);
             this.SetupButton(this.btnCustomer, "👥  Quản lý Khách hàng", 195, this.btnCustomer_Click);
             this.SetupButton(this.btnReports, "📊  Báo cáo Doanh thu", 240, this.btnReports_Click);
-            this.SetupButton(this.btnUserManage, "🛡  Quản trị Tài khoản", 285, this.btnUserManage_Click);
+            this.SetupButton(this.btnUserManage, "⚙  Cài đặt & Phân quyền", 285, this.btnUserManage_Click);
 
             // panelUserFooter
             this.panelUserFooter.Controls.Add(this.btnLogout);

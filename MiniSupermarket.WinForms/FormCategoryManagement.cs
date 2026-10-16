@@ -204,6 +204,24 @@ namespace MiniSupermarket.WinForms
             });
 
             dgvCategories.CellClick += DgvCategories_CellClick;
+            var categoryMenu = new ContextMenuStrip();
+            categoryMenu.Items.Add("Sửa chi tiết", null, (_, _) =>
+            {
+                if (dgvCategories.CurrentRow != null)
+                    DgvCategories_CellClick(dgvCategories, new DataGridViewCellEventArgs(0, dgvCategories.CurrentRow.Index));
+            });
+            categoryMenu.Items.Add("Xóa nhóm hàng", null, (_, _) => BtnDelete_Click(this, EventArgs.Empty));
+            dgvCategories.ContextMenuStrip = categoryMenu;
+            dgvCategories.CellMouseDown += (_, e) =>
+            {
+                if (e.Button == MouseButtons.Right && e.RowIndex >= 0)
+                {
+                    dgvCategories.ClearSelection();
+                    dgvCategories.Rows[e.RowIndex].Selected = true;
+                    dgvCategories.CurrentCell = dgvCategories.Rows[e.RowIndex].Cells[0];
+                    DgvCategories_CellClick(dgvCategories, new DataGridViewCellEventArgs(0, e.RowIndex));
+                }
+            };
 
             grpList.Controls.Add(dgvCategories);
 
@@ -417,6 +435,17 @@ namespace MiniSupermarket.WinForms
         // =========================================================
         // PHƯƠNG THỨC BỔ TRỢ
         // =========================================================
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.F2)
+            {
+                ClearInputs();
+                txtCategoryName.Focus();
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
         private bool ValidateInput()
         {
             if (string.IsNullOrWhiteSpace(txtCategoryName.Text))
