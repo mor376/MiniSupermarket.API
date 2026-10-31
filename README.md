@@ -1,7 +1,7 @@
 Nguyen Tran Ngoc Thuong  
 2124110088  
 CCQ2411C
-# MiniSupermarket.API
+# MiniSupermarket.API Chủ đề: Nghiên cứu Kiến trúc RESTful Web API trong Xây dựng Phần mềm Quản lý Bán hàng -- Cửa hàng Bách hóa Xanh An Phước
 
 Đồ án môn học **Lập trình ứng dụng C# .NET Core** – Trường Cao đẳng Công Thương TP. Hồ Chí Minh.
 
