@@ -60,7 +60,10 @@ namespace MiniSupermarket.WinForms
             if (lblUserInfo != null) lblUserInfo.Text = $"{displayName}  ·  {role}  ·  {DateTime.Now:HH:mm:ss}";
         }
 
+<<<<<<< HEAD
         // Checklist 36-39: shell cố định + chuyển màn hình trong panel trung tâm + kiểm soát quyền theo role.
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
         private bool OpenChildForm(Form childForm, string screenTitle, Button senderButton)
         {
             if (!CanAccess(senderButton))

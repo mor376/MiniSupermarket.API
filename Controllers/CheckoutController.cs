@@ -22,7 +22,10 @@ namespace MiniSupermarket.API.Controllers
             _logger = logger;
         }
 
+<<<<<<< HEAD
         // Checklist 42, 47: giao dịch POS chạy trong transaction; kiểm tra tồn kho, giá trị cuối, thương tích điểm thưởng.
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
         [HttpPost]
         public async Task<IActionResult> ProcessCheckout([FromBody] CheckoutRequestDto request, CancellationToken cancellationToken)
         {
@@ -43,6 +46,7 @@ namespace MiniSupermarket.API.Controllers
                 .OrderBy(item => item.ProductId)
                 .ToList();
 
+<<<<<<< HEAD
             var useRewardPoints = request.UseRewardPoints && request.RewardPointsToUse > 0;
             var pointsToUse = 0;
             if (useRewardPoints)
@@ -54,6 +58,8 @@ namespace MiniSupermarket.API.Controllers
                 }
             }
 
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
             await using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync(cancellationToken);
             await using var transaction = (SqlTransaction)await connection.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
@@ -84,6 +90,7 @@ namespace MiniSupermarket.API.Controllers
                 }
 
                 var totalItems = products.Sum(item => item.Quantity);
+<<<<<<< HEAD
                 var subtotal = products.Sum(item => item.UnitPrice * item.Quantity);
                 var rewardDiscount = 0m;
                 var customerRewardPoints = 0;
@@ -112,6 +119,9 @@ namespace MiniSupermarket.API.Controllers
                 }
 
                 var finalAmount = Math.Max(0m, subtotal - rewardDiscount);
+=======
+                var finalAmount = products.Sum(item => item.UnitPrice * item.Quantity);
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
                 var rewardPoints = (int)(finalAmount / 10000m);
                 var orderCode = $"AP-HD-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid():N}"[..31];
 
@@ -161,11 +171,18 @@ namespace MiniSupermarket.API.Controllers
                     }
                 }
 
+<<<<<<< HEAD
                 const string customerSql = "UPDATE Customers SET RewardPoints = RewardPoints + @PointsEarned - @PointsUsed WHERE CustomerId = @CustomerId;";
                 await using (var command = new SqlCommand(customerSql, connection, transaction))
                 {
                     command.Parameters.Add("@PointsEarned", SqlDbType.Int).Value = rewardPoints;
                     command.Parameters.Add("@PointsUsed", SqlDbType.Int).Value = pointsToUse;
+=======
+                const string customerSql = "UPDATE Customers SET RewardPoints = RewardPoints + @Points WHERE CustomerId = @CustomerId;";
+                await using (var command = new SqlCommand(customerSql, connection, transaction))
+                {
+                    command.Parameters.Add("@Points", SqlDbType.Int).Value = rewardPoints;
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
                     command.Parameters.Add("@CustomerId", SqlDbType.Int).Value = request.CustomerId;
                     if (await command.ExecuteNonQueryAsync(cancellationToken) != 1)
                     {

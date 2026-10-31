@@ -21,9 +21,12 @@ namespace MiniSupermarket.WinForms
 
         private readonly Label _totalLabel = new();
         private readonly Label _changeLabel = new();
+<<<<<<< HEAD
         private readonly Label _subtotalLabel = new();
         private readonly Label _discountLabel = new();
         private readonly CheckBox _useRewardPointsCheckBox = new();
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
         private readonly Label _clockLabel = new();
         private readonly Label _todayRevenueValue = new();
         private readonly Label _todayOrdersValue = new();
@@ -496,6 +499,7 @@ namespace MiniSupermarket.WinForms
             var points = new NumericUpDown { Minimum = 0, Maximum = 1000000, Value = 0, Dock = DockStyle.Fill };
             details.Controls.Add(points, 1, 2);
 
+<<<<<<< HEAD
             AddInvoiceRow(details, 3, "Voucher / điểm:");
             var rewardPanel = new TableLayoutPanel
             {
@@ -514,11 +518,18 @@ namespace MiniSupermarket.WinForms
             rewardPanel.Controls.Add(_voucherInput, 0, 0);
             rewardPanel.Controls.Add(_useRewardPointsCheckBox, 0, 1);
             details.Controls.Add(rewardPanel, 1, 3);
+=======
+            AddInvoiceRow(details, 3, "Voucher:");
+            _voucherInput.Dock = DockStyle.Fill;
+            _voucherInput.PlaceholderText = "Nhập mã";
+            details.Controls.Add(_voucherInput, 1, 3);
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
 
             AddInvoiceRow(details, 4, "Tổng tiền hàng:");
             AddInvoiceRow(details, 5, "Giảm giá:");
             AddInvoiceRow(details, 6, "VAT:");
 
+<<<<<<< HEAD
             _subtotalLabel.Text = "0 VND";
             _subtotalLabel.Dock = DockStyle.Fill;
             _subtotalLabel.TextAlign = ContentAlignment.MiddleRight;
@@ -528,6 +539,14 @@ namespace MiniSupermarket.WinForms
             _discountLabel.TextAlign = ContentAlignment.MiddleRight;
             details.Controls.Add(_discountLabel, 1, 5);
             var vatLabel = ValueLabel("0 VND");
+=======
+            var subtotalLabel = ValueLabel("0 VND");
+            var discountLabel = ValueLabel("0 VND");
+            var vatLabel = ValueLabel("0 VND");
+
+            details.Controls.Add(subtotalLabel, 1, 4);
+            details.Controls.Add(discountLabel, 1, 5);
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
             details.Controls.Add(vatLabel, 1, 6);
 
             var separator = new Label
@@ -710,7 +729,10 @@ namespace MiniSupermarket.WinForms
             await SearchProductAsync();
         }
 
+<<<<<<< HEAD
         // Checklist 42, 47: xử lý POS, kiểm tra tiền khách đưa, áp dụng ưu đãi điểm thưởng khi cần.
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
         private async void CheckoutButton_Click(object? sender, EventArgs e)
         {
             if (_cart.Count == 0)
@@ -725,15 +747,21 @@ namespace MiniSupermarket.WinForms
                 return;
             }
 
+<<<<<<< HEAD
             var subtotal = _cart.Sum(line => line.LineTotal);
             var discount = _useRewardPointsCheckBox.Checked ? 50000m : 0m;
             var payable = Math.Max(0m, subtotal - discount);
             if (!decimal.TryParse(_cashReceivedInput.Text, out var cashReceived) || cashReceived < payable)
+=======
+            var total = _cart.Sum(line => line.LineTotal);
+            if (!decimal.TryParse(_cashReceivedInput.Text, out var cashReceived) || cashReceived < total)
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
             {
                 MessageBox.Show("Tiền khách đưa chưa hợp lệ hoặc chưa đủ thanh toán.", "POS", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
+<<<<<<< HEAD
             var useRewardPoints = _useRewardPointsCheckBox.Checked;
             var pointsToUse = 0;
             if (useRewardPoints)
@@ -763,6 +791,11 @@ namespace MiniSupermarket.WinForms
                 CustomerId = customerId,
                 UseRewardPoints = useRewardPoints,
                 RewardPointsToUse = pointsToUse,
+=======
+            var request = new
+            {
+                CustomerId = customerId,
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
                 Items = _cart.Select(line => new { line.ProductId, line.Quantity, line.UnitPrice }).ToList()
             };
 
@@ -790,6 +823,7 @@ namespace MiniSupermarket.WinForms
             }
         }
 
+<<<<<<< HEAD
         // Checklist 42, 47: tổng tiền hàng, giảm giá điểm thưởng, tiền thừa được tính lại liên tục khi thay đổi giỏ hàng.
         private void UpdateTotal()
         {
@@ -802,6 +836,14 @@ namespace MiniSupermarket.WinForms
             _totalLabel.Text = $"{payable:N0} VND";
             _changeLabel.Text = decimal.TryParse(_cashReceivedInput.Text, out var cashReceived)
                 ? $"{Math.Max(0, cashReceived - payable):N0} VND"
+=======
+        private void UpdateTotal()
+        {
+            var total = _cart.Sum(line => line.LineTotal);
+            _totalLabel.Text = $"{total:N0} VND";
+            _changeLabel.Text = decimal.TryParse(_cashReceivedInput.Text, out var cashReceived)
+                ? $"{Math.Max(0, cashReceived - total):N0} VND"
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
                 : "0 VND";
         }
 

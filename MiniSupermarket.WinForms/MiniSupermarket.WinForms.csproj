@@ -10,7 +10,10 @@
 
   <ItemGroup>
     <PackageReference Include="System.Net.Http.Json" Version="8.0.0" />
+<<<<<<< HEAD
     <PackageReference Include="System.Windows.Forms.DataVisualization" Version="1.0.0-prerelease.20110.1" />
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
   </ItemGroup>
 
   <ItemGroup>

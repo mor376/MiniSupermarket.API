@@ -22,7 +22,10 @@ namespace MiniSupermarket.API.Controllers
             _dbContext = dbContext;
         }
 
+<<<<<<< HEAD
         // Checklist 44-46: KPI, sales-by-day, top products cho dashboard báo cáo.
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
         [HttpGet("dashboard-summary")]
         public async Task<IActionResult> GetDashboardSummary([FromQuery] int? range, CancellationToken cancellationToken)
         {

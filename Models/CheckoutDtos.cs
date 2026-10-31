@@ -18,11 +18,14 @@ namespace MiniSupermarket.API.Models
         [Range(1, int.MaxValue)]
         public int CustomerId { get; set; }
 
+<<<<<<< HEAD
         public bool UseRewardPoints { get; set; }
 
         [Range(0, 50)]
         public int RewardPointsToUse { get; set; }
 
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
         [Required]
         [MinLength(1)]
         public List<CartItemCheckoutDto> Items { get; set; } = new();

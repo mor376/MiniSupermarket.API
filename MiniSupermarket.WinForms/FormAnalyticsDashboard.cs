@@ -2,12 +2,18 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+<<<<<<< HEAD
 using System.IO;
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+<<<<<<< HEAD
 using System.Windows.Forms.DataVisualization.Charting;
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
 
 namespace MiniSupermarket.WinForms
 {
@@ -141,6 +147,7 @@ namespace MiniSupermarket.WinForms
                 Padding = new Padding(0)
             };
 
+<<<<<<< HEAD
             var exportButton = new Button
             {
                 Text = "Xuất CSV",
@@ -155,6 +162,8 @@ namespace MiniSupermarket.WinForms
             exportButton.FlatAppearance.BorderSize = 0;
             exportButton.Click += async (_, _) => await ExportToCsvAsync();
 
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
             var lblTime = new Label { Text = "Thời gian:", AutoSize = true, Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), ForeColor = Color.FromArgb(31, 41, 55), Margin = new Padding(0, 6, 6, 0) };
             _timeFilter.DropDownStyle = ComboBoxStyle.DropDownList;
             _timeFilter.Items.AddRange(new object[] { "7 ngày", "30 ngày", "90 ngày", "Toàn thời gian" });
@@ -181,7 +190,10 @@ namespace MiniSupermarket.WinForms
             filterLayout.Controls.Add(lblStore);
             filterLayout.Controls.Add(_storeFilter);
             filterLayout.Controls.Add(_darkModeToggle);
+<<<<<<< HEAD
             filterLayout.Controls.Add(exportButton);
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
             filterBar.Controls.Add(filterLayout);
 
             // 3. Khung nội dung chính phân bổ 3 phần: Các thẻ KPI, Biểu đồ & Bảng dữ liệu
@@ -419,7 +431,10 @@ namespace MiniSupermarket.WinForms
             };
         }
 
+<<<<<<< HEAD
         // Checklist 44-48: load KPI, chart doanh thu, top sản phẩm, export CSV báo cáo.
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
         private async Task LoadReportAsync()
         {
             var range = _timeFilter.SelectedItem?.ToString() switch
@@ -554,6 +569,7 @@ namespace MiniSupermarket.WinForms
             Invalidate();
         }
 
+<<<<<<< HEAD
         // Checklist 48: xuất báo cáo sang CSV cho dữ liệu doanh thu đã có.
         private async Task ExportToCsvAsync()
         {
@@ -589,6 +605,8 @@ namespace MiniSupermarket.WinForms
             MessageBox.Show($"Xuất báo cáo thành công:\n{dialog.FileName}", "Xuất CSV", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
         private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
         private static List<SalesByDayDto> ParseSalesByDay(object? payload)
@@ -743,6 +761,7 @@ namespace MiniSupermarket.WinForms
         private sealed class RevenueChartPanel : Panel
         {
             private readonly ToolTip _tooltip = new();
+<<<<<<< HEAD
             private readonly Chart _chart = new();
             private PointF? _hoverPoint;
 
@@ -763,12 +782,17 @@ namespace MiniSupermarket.WinForms
                 Controls.Add(_chart);
             }
 
+=======
+            private PointF? _hoverPoint;
+
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
             public List<SalesByDayDto> Data { get; private set; } = new();
 
             public void SetData(List<SalesByDayDto> data)
             {
                 Data = data ?? new List<SalesByDayDto>();
                 _hoverPoint = null;
+<<<<<<< HEAD
 
                 var series = _chart.Series["Revenue"];
                 series.Points.Clear();
@@ -778,6 +802,8 @@ namespace MiniSupermarket.WinForms
                     series.Points.AddXY(item.Date.ToString("dd/MM"), (double)item.Revenue);
                 }
 
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
                 _tooltip.SetToolTip(this, Data.Count == 0 ? "Chưa có dữ liệu" : "Di chuột để xem chi tiết");
             }
 

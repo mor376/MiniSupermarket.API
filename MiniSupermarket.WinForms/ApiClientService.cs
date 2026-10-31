@@ -126,7 +126,10 @@ namespace MiniSupermarket.WinForms
             return _activeClient ??= ClientPool[0];
         }
 
+<<<<<<< HEAD
         // Checklist 38-40: lưu token sau đăng nhập và tự động gắn Authorization cho mọi request API.
+=======
+>>>>>>> f0301efe1787856d53ccf540414a58191753b22f
         private static void AttachToken()
         {
             var activeClient = GetActiveClient();
