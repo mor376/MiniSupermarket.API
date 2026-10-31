@@ -5,7 +5,7 @@ CCQ2411C
 
 Đồ án môn học **Lập trình ứng dụng C# .NET Core** – Trường Cao đẳng Công Thương TP. Hồ Chí Minh.
 
-- Sinh viên: Nguyễn Trần Ngọc Thương
+- Sinh viên: Nguyễn Trần Ngọc Thưởng
 - MSSV: 2124110088
 - Lớp: CCQ2411C
 - GVHD: ThS. Nguyễn Cao Thái
